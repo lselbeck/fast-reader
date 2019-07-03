@@ -1,8 +1,43 @@
-import Button from '@material-ui/core/Button';
+import {
+  Button,
+  createStyles,
+  CssBaseline,
+  Grid,
+  Paper,
+  TextField,
+  Theme,
+  Typography,
+} from '@material-ui/core';
+import { red } from '@material-ui/core/colors';
+import { WithStyles, withStyles } from '@material-ui/core/styles';
 import React from 'react';
+import shortid from 'shortid';
+import Application from './head';
 
-export default class Home extends React.Component<
-  {},
+const styles = (theme: Theme) =>
+  createStyles({
+    margin: {
+      margin: theme.spacing(1),
+    },
+    paper: {
+      color: theme.palette.text.secondary,
+      margin: theme.spacing(4),
+      padding: theme.spacing(2),
+      textAlign: 'left',
+    },
+    red: {
+      // backgroundColor: red[50],
+      borderBottom: 'solid',
+      borderTop: 'solid',
+      color: red[500],
+    },
+    root: {
+      flexGrow: 1,
+    },
+  });
+
+class Home extends React.Component<
+  WithStyles<typeof styles>,
   {
     text: string;
     textArray: string[];
@@ -14,7 +49,7 @@ export default class Home extends React.Component<
 > {
   private interval: NodeJS.Timer | undefined;
 
-  constructor(props: {}) {
+  constructor(props: WithStyles<typeof styles>) {
     super(props);
     this.state = {
       play: false,
@@ -32,40 +67,76 @@ export default class Home extends React.Component<
     this.stop = this.stop.bind(this);
     this.start = this.start.bind(this);
     this.convertWpmToMs = this.convertWpmToMs.bind(this);
+    this.highlightLetter = this.highlightLetter.bind(this);
   }
 
   public render() {
+    const { classes } = this.props;
     const currentWord = this.state.textArray[
       this.state.textIndex % this.state.textArray.length
     ];
+    const higlightIndex = this.highlightLetter(currentWord);
     const playText = this.state.play ? 'Pause' : 'Play';
 
     return (
-      <div>
-        <label>
-          Input Text
-          <textarea
-            value={this.state.text}
-            onChange={this.handleTextAreaChange}
-          />
-        </label>
-        <Button variant="contained" color="primary" onClick={this.playPause}>
-          {playText}
-        </Button>
-        <label>
-          Words per minute
-          <input
-            type="number"
-            min="1"
-            max="2000"
-            value={this.state.wpm}
-            onChange={this.handleWpmChange}
-          />
-        </label>
-        <h4>{this.state.text}</h4>
-        <br />
-        <h1>{currentWord}</h1>
-      </div>
+      <React.Fragment>
+        <CssBaseline />
+        <Application />
+        <div className={classes.root}>
+          <Grid container spacing={3} alignItems="flex-end" justify="center">
+            <Grid item xs={12}>
+              <Paper className={classes.paper}>
+                <Grid item>
+                  <TextField
+                    className={classes.margin}
+                    multiline
+                    fullWidth
+                    rows={5}
+                    rowsMax={15}
+                    variant="outlined"
+                    label="Text to read"
+                    value={this.state.text}
+                    onChange={this.handleTextAreaChange}
+                  />
+                </Grid>
+                <Grid item>
+                  <TextField
+                    className={classes.margin}
+                    label="Words per minute"
+                    type="number"
+                    value={this.state.wpm}
+                    onChange={this.handleWpmChange}
+                  />
+                  <Button
+                    className={classes.margin}
+                    variant="contained"
+                    color="primary"
+                    onClick={this.playPause}
+                  >
+                    {playText}
+                  </Button>
+                </Grid>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper className={classes.paper}>
+                {currentWord && (
+                  <Typography align="center" variant="h1">
+                    {currentWord.split('').map((c, i) => (
+                      <span
+                        key={shortid.generate()}
+                        className={i === higlightIndex ? classes.red : ''}
+                      >
+                        {c}
+                      </span>
+                    ))}
+                  </Typography>
+                )}
+              </Paper>
+            </Grid>
+          </Grid>
+        </div>
+      </React.Fragment>
     );
   }
 
@@ -114,7 +185,7 @@ export default class Home extends React.Component<
     const value = event.target.value.replace(/-/g, '');
     const wpm = parseInt(value);
 
-    if (!value.length || (value.length === 1 && wpm <= 0)) {
+    if (!value.length || new RegExp(/^0+$/).test(value)) {
       this.stop();
       this.setState({
         speed: 100000,
@@ -128,7 +199,8 @@ export default class Home extends React.Component<
           wpm,
         },
         () => {
-          if (shouldPlay) { // maybe get rid of this callback
+          if (shouldPlay) {
+            // maybe get rid of this callback
             this.stop();
             this.start();
           }
@@ -167,4 +239,18 @@ export default class Home extends React.Component<
   private convertWpmToMs(wpm: number): number {
     return (1 / (wpm / 60)) * 1000;
   }
+
+  private highlightLetter(word: string): number {
+    if (!word || word.length === 0) {
+      return 0;
+    } else if (word.length < 3) {
+      return word.length - 1;
+    } else if (word.length < 5) {
+      return 1;
+    } else {
+      return 2;
+    }
+  }
 }
+
+export default withStyles(styles)(Home);
