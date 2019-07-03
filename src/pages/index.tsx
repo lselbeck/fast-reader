@@ -21,7 +21,7 @@ const styles = (theme: Theme) =>
     },
     paper: {
       color: theme.palette.text.secondary,
-      margin: theme.spacing(4),
+      margin: theme.spacing(3),
       padding: theme.spacing(2),
       textAlign: 'left',
     },
