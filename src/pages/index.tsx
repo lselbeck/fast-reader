@@ -9,20 +9,26 @@ import {
   Typography,
 } from '@material-ui/core';
 import { red } from '@material-ui/core/colors';
-import { WithStyles, withStyles } from '@material-ui/core/styles';
+import {
+  createMuiTheme,
+  MuiThemeProvider,
+  responsiveFontSizes,
+  WithStyles,
+  withStyles,
+} from '@material-ui/core/styles';
 import React from 'react';
 import shortid from 'shortid';
 import Application from './head';
 
-const styles = (theme: Theme) =>
+const styles = (t: Theme) =>
   createStyles({
     margin: {
-      margin: theme.spacing(1),
+      margin: t.spacing(1),
     },
     paper: {
-      color: theme.palette.text.secondary,
-      margin: theme.spacing(3),
-      padding: theme.spacing(2),
+      color: t.palette.text.secondary,
+      margin: t.spacing(3),
+      padding: t.spacing(2),
       textAlign: 'left',
     },
     red: {
@@ -35,6 +41,9 @@ const styles = (theme: Theme) =>
       flexGrow: 1,
     },
   });
+
+let theme = createMuiTheme();
+theme = responsiveFontSizes(theme);
 
 class Home extends React.Component<
   WithStyles<typeof styles>,
@@ -80,62 +89,64 @@ class Home extends React.Component<
 
     return (
       <React.Fragment>
-        <CssBaseline />
-        <Application />
-        <div className={classes.root}>
-          <Grid container spacing={3} alignItems="flex-end" justify="center">
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>
-                <Grid item>
-                  <TextField
-                    className={classes.margin}
-                    multiline
-                    fullWidth
-                    rows={5}
-                    rowsMax={15}
-                    variant="outlined"
-                    label="Text to read"
-                    value={this.state.text}
-                    onChange={this.handleTextAreaChange}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    className={classes.margin}
-                    label="Words per minute"
-                    type="number"
-                    value={this.state.wpm}
-                    onChange={this.handleWpmChange}
-                  />
-                  <Button
-                    className={classes.margin}
-                    variant="contained"
-                    color="primary"
-                    onClick={this.playPause}
-                  >
-                    {playText}
-                  </Button>
-                </Grid>
-              </Paper>
+        <MuiThemeProvider theme={theme}>
+          <CssBaseline />
+          <Application />
+          <div className={classes.root}>
+            <Grid container spacing={3} alignItems="flex-end" justify="center">
+              <Grid item xs={12}>
+                <Paper className={classes.paper}>
+                  <Grid item>
+                    <TextField
+                      className={classes.margin}
+                      multiline
+                      fullWidth
+                      rows={5}
+                      rowsMax={15}
+                      variant="outlined"
+                      label="Text to read"
+                      value={this.state.text}
+                      onChange={this.handleTextAreaChange}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      className={classes.margin}
+                      label="Words per minute"
+                      type="number"
+                      value={this.state.wpm}
+                      onChange={this.handleWpmChange}
+                    />
+                    <Button
+                      className={classes.margin}
+                      variant="contained"
+                      color="primary"
+                      onClick={this.playPause}
+                    >
+                      {playText}
+                    </Button>
+                  </Grid>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Paper className={classes.paper}>
+                  {currentWord && (
+                    <Typography align="center" variant="h1">
+                      {currentWord.split('').map((c, i) => (
+                        <span
+                          key={shortid.generate()}
+                          className={i === higlightIndex ? classes.red : ''}
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </Typography>
+                  )}
+                </Paper>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Paper className={classes.paper}>
-                {currentWord && (
-                  <Typography align="center" variant="h1">
-                    {currentWord.split('').map((c, i) => (
-                      <span
-                        key={shortid.generate()}
-                        className={i === higlightIndex ? classes.red : ''}
-                      >
-                        {c}
-                      </span>
-                    ))}
-                  </Typography>
-                )}
-              </Paper>
-            </Grid>
-          </Grid>
-        </div>
+          </div>
+        </MuiThemeProvider>
       </React.Fragment>
     );
   }
