@@ -197,6 +197,8 @@ class Home extends React.Component<
       });
     }
 
+    console.log(this.interval);
+
     if (!this.state.play && !this.interval) {
       this.start();
     } else if (this.state.play && this.interval) {
@@ -280,7 +282,7 @@ class Home extends React.Component<
       return 0;
     } else if (word.length < 3) {
       return word.length - 1;
-    } else if (word.length < 5) {
+    } else if (word.length < 6) {
       return 1;
     } else {
       return 2;
@@ -290,8 +292,22 @@ class Home extends React.Component<
   private dynamicInterval(): void {
     this.interval = setTimeout(() => {
       this.cycleWords();
-      return this.dynamicInterval();
-    }, this.state.speed);
+      if (this.interval) {
+        return this.dynamicInterval();
+      } else {
+        return () => {};
+      }
+    }, this.speedWithPunctuation());
+  }
+
+  private speedWithPunctuation(): number {
+    if (/[\.\;\!\?\:]/.test(this.state.textArray[this.state.textIndex])) {
+      return this.state.speed * 2;
+    } else if (/,/.test(this.state.textArray[this.state.textIndex])) {
+      return this.state.speed * 1.5;
+    } else {
+      return this.state.speed;
+    }
   }
 }
 
