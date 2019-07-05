@@ -77,6 +77,8 @@ class Home extends React.Component<
     this.start = this.start.bind(this);
     this.convertWpmToMs = this.convertWpmToMs.bind(this);
     this.highlightLetter = this.highlightLetter.bind(this);
+    this.dynamicInterval = this.dynamicInterval.bind(this);
+    this.resetInterval = this.resetInterval.bind(this);
   }
 
   public render() {
@@ -162,10 +164,6 @@ class Home extends React.Component<
   }
 
   private playPause(): void {
-    if (!this.state.wpm) {
-      return;
-    }
-
     if (
       !this.state.play &&
       this.state.textIndex >= this.state.textArray.length - 1
@@ -187,7 +185,7 @@ class Home extends React.Component<
 
     this.setState({
       text: event.target.value,
-      textArray: event.target.value.split(' '),
+      textArray: event.target.value.trim().split(/\s+/g),
       textIndex: 0,
     });
   }
@@ -197,32 +195,27 @@ class Home extends React.Component<
     const wpm = parseInt(value);
 
     if (!value.length || new RegExp(/^0+$/).test(value)) {
-      this.stop();
-      this.setState({
-        speed: 100000,
-        wpm: isNaN(wpm) ? undefined : wpm,
-      });
+      this.setState(
+        {
+          speed: 100000,
+          wpm: 0,
+        },
+        this.resetInterval
+      );
     } else {
-      const shouldPlay = !!this.state.wpm;
       this.setState(
         {
           speed: this.convertWpmToMs(wpm),
           wpm,
         },
-        () => {
-          if (shouldPlay) {
-            // maybe get rid of this callback
-            this.stop();
-            this.start();
-          }
-        }
+        this.resetInterval
       );
     }
   }
 
   private stop(): void {
     if (this.interval) {
-      clearInterval(this.interval);
+      clearTimeout(this.interval);
     }
     this.interval = undefined;
     this.setState({
@@ -234,7 +227,14 @@ class Home extends React.Component<
     this.setState({
       play: true,
     });
-    this.interval = setInterval(() => this.cycleWords(), this.state.speed);
+    this.dynamicInterval();
+  }
+
+  private resetInterval(): void {
+    if (this.state.play) {
+      this.stop();
+      this.start();
+    }
   }
 
   private cycleWords(): void {
@@ -261,6 +261,13 @@ class Home extends React.Component<
     } else {
       return 2;
     }
+  }
+
+  private dynamicInterval(): void {
+    this.interval = setTimeout(() => {
+      this.cycleWords();
+      return this.dynamicInterval();
+    }, this.state.speed);
   }
 }
 
