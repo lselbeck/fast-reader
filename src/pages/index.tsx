@@ -2,6 +2,9 @@ import {
   Button,
   createStyles,
   CssBaseline,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
   Grid,
   Paper,
   TextField,
@@ -16,19 +19,27 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core/styles';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import clsx from 'clsx';
 import React from 'react';
 import shortid from 'shortid';
 import Application from './head';
 
 const styles = (t: Theme) =>
   createStyles({
+    inside: {
+      border: 'none',
+      boxShadow: 'none',
+    },
     margin: {
       margin: t.spacing(1),
+    },
+    padding: {
+      padding: t.spacing(2),
     },
     paper: {
       color: t.palette.text.secondary,
       margin: t.spacing(3),
-      padding: t.spacing(2),
       textAlign: 'left',
     },
     red: {
@@ -98,40 +109,53 @@ class Home extends React.Component<
             <Grid container spacing={3} alignItems="flex-end" justify="center">
               <Grid item xs={12}>
                 <Paper className={classes.paper}>
-                  <Grid item>
-                    <TextField
-                      className={classes.margin}
-                      multiline
-                      fullWidth
-                      rows={5}
-                      rowsMax={15}
-                      variant="outlined"
-                      label="Text to read"
-                      value={this.state.text}
-                      onChange={this.handleTextAreaChange}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <TextField
-                      className={classes.margin}
-                      label="Words per minute"
-                      type="number"
-                      value={this.state.wpm}
-                      onChange={this.handleWpmChange}
-                    />
-                    <Button
-                      className={classes.margin}
-                      variant="contained"
-                      color="primary"
-                      onClick={this.playPause}
+                  <ExpansionPanel defaultExpanded className={classes.inside}>
+                    <ExpansionPanelSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls="panel1c-content"
+                      id="panel1c-header"
                     >
-                      {playText}
-                    </Button>
-                  </Grid>
+                      <Typography>Control Panel</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails className={classes.paper}>
+                      <Grid container>
+                        <Grid item xs={12}>
+                          <TextField
+                            className={classes.margin}
+                            multiline
+                            fullWidth
+                            rows={5}
+                            rowsMax={15}
+                            variant="outlined"
+                            label="Text to read"
+                            value={this.state.text}
+                            onChange={this.handleTextAreaChange}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            className={classes.margin}
+                            label="Words per minute"
+                            type="number"
+                            value={this.state.wpm}
+                            onChange={this.handleWpmChange}
+                          />
+                          <Button
+                            className={classes.margin}
+                            variant="contained"
+                            color="primary"
+                            onClick={this.playPause}
+                          >
+                            {playText}
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </ExpansionPanelDetails>
+                  </ExpansionPanel>
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Paper className={classes.paper}>
+                <Paper className={clsx(classes.paper, classes.padding)}>
                   {currentWord && (
                     <Typography align="center" variant="h1">
                       {currentWord.split('').map((c, i) => (
