@@ -367,9 +367,9 @@ class Home extends React.Component<
   }
 
   private speedWithPunctuation(): number {
-    if (/[\.\;\!\?\:]/.test(this.state.textArray[this.state.textIndex])) {
+    if (/[\.\;\!\?]/.test(this.state.textArray[this.state.textIndex])) {
       return this.state.speed * 1.5;
-    } else if (/,/.test(this.state.textArray[this.state.textIndex])) {
+    } else if (/,\:/.test(this.state.textArray[this.state.textIndex])) {
       return this.state.speed * 1.2;
     } else {
       return this.state.speed;
