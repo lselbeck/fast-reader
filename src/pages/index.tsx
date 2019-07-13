@@ -27,6 +27,15 @@ import Application from './head';
 
 const styles = (t: Theme) =>
   createStyles({
+    expansionDetails: {
+      color: t.palette.text.secondary,
+      margin: t.spacing(3),
+      marginTop: '0',
+      [t.breakpoints.down('xs')]: {
+        margin: t.spacing(1),
+      },
+      textAlign: 'left',
+    },
     inside: {
       border: 'none',
       boxShadow: 'none',
@@ -40,6 +49,9 @@ const styles = (t: Theme) =>
     paper: {
       color: t.palette.text.secondary,
       margin: t.spacing(3),
+      [t.breakpoints.down('xs')]: {
+        margin: t.spacing(1),
+      },
       textAlign: 'left',
     },
     red: {
@@ -64,6 +76,7 @@ class Home extends React.Component<
     textIndex: number;
     speed: number;
     play: boolean;
+    playText: string;
     wpm: number | undefined;
   }
 > {
@@ -73,6 +86,7 @@ class Home extends React.Component<
     super(props);
     this.state = {
       play: false,
+      playText: 'play',
       speed: this.convertWpmToMs(100),
       text: '',
       textArray: [],
@@ -84,12 +98,14 @@ class Home extends React.Component<
     this.handleWpmChange = this.handleWpmChange.bind(this);
     this.cycleWords = this.cycleWords.bind(this);
     this.playPause = this.playPause.bind(this);
+    this.reset = this.reset.bind(this);
     this.stop = this.stop.bind(this);
     this.start = this.start.bind(this);
     this.convertWpmToMs = this.convertWpmToMs.bind(this);
     this.highlightLetter = this.highlightLetter.bind(this);
     this.dynamicInterval = this.dynamicInterval.bind(this);
     this.resetInterval = this.resetInterval.bind(this);
+    this.setIntervalAndExecute = this.setIntervalAndExecute.bind(this);
   }
 
   public render() {
@@ -98,7 +114,6 @@ class Home extends React.Component<
       this.state.textIndex % this.state.textArray.length
     ];
     const higlightIndex = this.highlightLetter(currentWord);
-    const playText = this.state.play ? 'Pause' : 'Play';
 
     return (
       <React.Fragment>
@@ -117,7 +132,7 @@ class Home extends React.Component<
                     >
                       <Typography>Control Panel</Typography>
                     </ExpansionPanelSummary>
-                    <ExpansionPanelDetails className={classes.paper}>
+                    <ExpansionPanelDetails className={classes.expansionDetails}>
                       <Grid container>
                         <Grid item xs={12}>
                           <TextField
@@ -146,7 +161,15 @@ class Home extends React.Component<
                             color="primary"
                             onClick={this.playPause}
                           >
-                            {playText}
+                            {this.state.playText}
+                          </Button>
+                          <Button
+                            className={classes.margin}
+                            variant="contained"
+                            color="secondary"
+                            onClick={this.reset}
+                          >
+                            reset
                           </Button>
                         </Grid>
                       </Grid>
@@ -154,21 +177,43 @@ class Home extends React.Component<
                   </ExpansionPanel>
                 </Paper>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Paper className={clsx(classes.paper, classes.padding)}>
-                  {currentWord && (
-                    <Typography align="center" variant="h1">
-                      {currentWord.split('').map((c, i) => (
-                        <span
-                          key={shortid.generate()}
-                          className={i === higlightIndex ? classes.red : ''}
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </Typography>
-                  )}
-                </Paper>
+              <Grid container item xs={12} md={6} spacing={2}>
+                <Grid item xs={12}>
+                  <Paper className={clsx(classes.padding)}>
+                    {currentWord && (
+                      <Typography align="center" variant="h1">
+                        {currentWord.split('').map((c, i) => (
+                          <span
+                            key={shortid.generate()}
+                            className={i === higlightIndex ? classes.red : ''}
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </Typography>
+                    )}
+                  </Paper>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={this.playPause}
+                  >
+                    {this.state.playText}
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    fullWidth
+                    onClick={this.reset}
+                  >
+                    reset
+                  </Button>
+                </Grid>
               </Grid>
             </Grid>
           </div>
@@ -197,13 +242,18 @@ class Home extends React.Component<
       });
     }
 
-    console.log(this.interval);
-
     if (!this.state.play && !this.interval) {
       this.start();
     } else if (this.state.play && this.interval) {
       this.stop();
     }
+  }
+
+  private reset(): void {
+    this.stop();
+    this.setState({
+      textIndex: 0,
+    });
   }
 
   private handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -246,14 +296,32 @@ class Home extends React.Component<
     this.interval = undefined;
     this.setState({
       play: false,
+      playText: 'play',
     });
   }
 
   private start(): void {
-    this.setState({
-      play: true,
-    });
-    this.dynamicInterval();
+    if (this.state.textArray.length === 0) {
+      return;
+    }
+
+    let countdownStart = 3;
+    const countdown = this.setIntervalAndExecute(() => {
+      this.setState({
+        playText: countdownStart.toString(),
+      });
+
+      if (countdownStart > 0) {
+        countdownStart--;
+      } else {
+        clearInterval(countdown);
+        this.setState({
+          play: true,
+          playText: 'pause',
+        });
+        this.dynamicInterval();
+      }
+    }, 1000);
   }
 
   private resetInterval(): void {
@@ -294,20 +362,23 @@ class Home extends React.Component<
       this.cycleWords();
       if (this.interval) {
         return this.dynamicInterval();
-      } else {
-        return () => {};
       }
     }, this.speedWithPunctuation());
   }
 
   private speedWithPunctuation(): number {
     if (/[\.\;\!\?\:]/.test(this.state.textArray[this.state.textIndex])) {
-      return this.state.speed * 2;
-    } else if (/,/.test(this.state.textArray[this.state.textIndex])) {
       return this.state.speed * 1.5;
+    } else if (/,/.test(this.state.textArray[this.state.textIndex])) {
+      return this.state.speed * 1.2;
     } else {
       return this.state.speed;
     }
+  }
+
+  private setIntervalAndExecute(f: (...args: any[]) => void, t: number) {
+    f();
+    return setInterval(f, t);
   }
 }
 
