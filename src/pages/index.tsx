@@ -27,14 +27,15 @@ import Application from './head';
 
 const styles = (t: Theme) =>
   createStyles({
-    expansionDetails: {
-      color: t.palette.text.secondary,
-      margin: t.spacing(3),
-      marginTop: '0',
-      [t.breakpoints.down('xs')]: {
-        margin: t.spacing(1),
-      },
-      textAlign: 'left',
+    controlPanel: {
+      alignSelf: 'flex-start',
+    },
+    controlTitle: {
+      borderRight: `2px solid ${theme.palette.divider}`,
+      margin: 'auto 0',
+      marginRight: t.spacing(1),
+      padding: t.spacing(1, 2),
+      paddingLeft: t.spacing(1),
     },
     inside: {
       border: 'none',
@@ -61,7 +62,10 @@ const styles = (t: Theme) =>
       color: red[500],
     },
     root: {
-      flexGrow: 1,
+      minHeight: '99vh',
+    },
+    textDisplay: {
+      alignSelf: 'flex-start',
     },
   });
 
@@ -110,9 +114,7 @@ class Home extends React.Component<
 
   public render() {
     const { classes } = this.props;
-    const currentWord = this.state.textArray[
-      this.state.textIndex % this.state.textArray.length
-    ];
+    const currentWord = this.state.textArray[this.state.textIndex % this.state.textArray.length];
     const higlightIndex = this.highlightLetter(currentWord);
 
     return (
@@ -120,103 +122,79 @@ class Home extends React.Component<
         <MuiThemeProvider theme={theme}>
           <CssBaseline />
           <Application />
-          <div className={classes.root}>
-            <Grid container spacing={3} alignItems="flex-end" justify="center">
-              <Grid item xs={12}>
-                <Paper className={classes.paper}>
-                  <ExpansionPanel defaultExpanded className={classes.inside}>
-                    <ExpansionPanelSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel1c-content"
-                      id="panel1c-header"
+          <Grid container justify="center" className={classes.root}>
+            <Grid item xs={12} className={classes.controlPanel}>
+              <Paper className={classes.paper}>
+                <ExpansionPanel defaultExpanded className={classes.inside}>
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1c-content"
+                    id="panel1c-header"
+                  >
+                    <Typography className={classes.controlTitle}>Controls</Typography>
+                    <Button
+                      className={classes.margin}
+                      variant="contained"
+                      color="primary"
+                      onClick={this.playPause}
                     >
-                      <Typography>Control Panel</Typography>
-                    </ExpansionPanelSummary>
-                    <ExpansionPanelDetails className={classes.expansionDetails}>
-                      <Grid container>
-                        <Grid item xs={12}>
-                          <TextField
-                            className={classes.margin}
-                            multiline
-                            fullWidth
-                            rows={5}
-                            rowsMax={15}
-                            variant="outlined"
-                            label="Text to read"
-                            value={this.state.text}
-                            onChange={this.handleTextAreaChange}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <TextField
-                            className={classes.margin}
-                            label="Words per minute"
-                            type="number"
-                            value={this.state.wpm}
-                            onChange={this.handleWpmChange}
-                          />
-                          <Button
-                            className={classes.margin}
-                            variant="contained"
-                            color="primary"
-                            onClick={this.playPause}
-                          >
-                            {this.state.playText}
-                          </Button>
-                          <Button
-                            className={classes.margin}
-                            variant="contained"
-                            color="secondary"
-                            onClick={this.reset}
-                          >
-                            reset
-                          </Button>
-                        </Grid>
+                      {this.state.playText}
+                    </Button>
+                    <Button
+                      className={classes.margin}
+                      variant="contained"
+                      color="secondary"
+                      onClick={this.reset}
+                    >
+                      reset
+                    </Button>
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <TextField
+                          multiline
+                          fullWidth
+                          rows={5}
+                          rowsMax={15}
+                          variant="outlined"
+                          label="Text to read"
+                          value={this.state.text}
+                          onChange={this.handleTextAreaChange}
+                        />
                       </Grid>
-                    </ExpansionPanelDetails>
-                  </ExpansionPanel>
+                      <Grid item xs={12}>
+                        <TextField
+                          label="Words per minute"
+                          type="number"
+                          value={this.state.wpm}
+                          onChange={this.handleWpmChange}
+                        />
+                      </Grid>
+                    </Grid>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+              </Paper>
+            </Grid>
+            <Grid container item xs={12} md={6} spacing={2} className={classes.textDisplay}>
+              <Grid item xs={12}>
+                <Paper className={clsx(classes.padding)}>
+                  {currentWord && (
+                    <Typography align="center" variant="h1">
+                      {currentWord.split('').map((c, i) => (
+                        <span
+                          key={shortid.generate()}
+                          className={i === higlightIndex ? classes.red : ''}
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </Typography>
+                  )}
                 </Paper>
               </Grid>
-              <Grid container item xs={12} md={6} spacing={2}>
-                <Grid item xs={12}>
-                  <Paper className={clsx(classes.padding)}>
-                    {currentWord && (
-                      <Typography align="center" variant="h1">
-                        {currentWord.split('').map((c, i) => (
-                          <span
-                            key={shortid.generate()}
-                            className={i === higlightIndex ? classes.red : ''}
-                          >
-                            {c}
-                          </span>
-                        ))}
-                      </Typography>
-                    )}
-                  </Paper>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    onClick={this.playPause}
-                  >
-                    {this.state.playText}
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    fullWidth
-                    onClick={this.reset}
-                  >
-                    reset
-                  </Button>
-                </Grid>
-              </Grid>
             </Grid>
-          </div>
+          </Grid>
         </MuiThemeProvider>
       </React.Fragment>
     );
@@ -233,10 +211,7 @@ class Home extends React.Component<
   }
 
   private playPause(): void {
-    if (
-      !this.state.play &&
-      this.state.textIndex >= this.state.textArray.length - 1
-    ) {
+    if (!this.state.play && this.state.textIndex >= this.state.textArray.length - 1) {
       this.setState({
         textIndex: 0,
       });
@@ -369,7 +344,7 @@ class Home extends React.Component<
   private speedWithPunctuation(): number {
     if (/[\.\;\!\?]/.test(this.state.textArray[this.state.textIndex])) {
       return this.state.speed * 1.5;
-    } else if (/,\:/.test(this.state.textArray[this.state.textIndex])) {
+    } else if (/[,\:\-\u2012-\u2015]/.test(this.state.textArray[this.state.textIndex])) {
       return this.state.speed * 1.2;
     } else {
       return this.state.speed;
