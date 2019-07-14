@@ -27,6 +27,10 @@ import Application from './head';
 
 const styles = (t: Theme) =>
   createStyles({
+    buttons: {
+      margin: t.spacing(1),
+      zIndex: 10000,
+    },
     controlPanel: {
       alignSelf: 'flex-start',
     },
@@ -40,9 +44,6 @@ const styles = (t: Theme) =>
     inside: {
       border: 'none',
       boxShadow: 'none',
-    },
-    margin: {
-      margin: t.spacing(1),
     },
     padding: {
       padding: t.spacing(2),
@@ -133,7 +134,7 @@ class Home extends React.Component<
                   >
                     <Typography className={classes.controlTitle}>Controls</Typography>
                     <Button
-                      className={classes.margin}
+                      className={classes.buttons}
                       variant="contained"
                       color="primary"
                       onClick={this.playPause}
@@ -141,7 +142,7 @@ class Home extends React.Component<
                       {this.state.playText}
                     </Button>
                     <Button
-                      className={classes.margin}
+                      className={classes.buttons}
                       variant="contained"
                       color="secondary"
                       onClick={this.reset}
@@ -210,7 +211,9 @@ class Home extends React.Component<
     this.stop();
   }
 
-  private playPause(): void {
+  private playPause(event: React.MouseEvent<HTMLElement>): void {
+    event.stopPropagation();
+
     if (!this.state.play && this.state.textIndex >= this.state.textArray.length - 1) {
       this.setState({
         textIndex: 0,
@@ -224,7 +227,9 @@ class Home extends React.Component<
     }
   }
 
-  private reset(): void {
+  private reset(event: React.MouseEvent<HTMLElement>): void {
+    event.stopPropagation();
+
     this.stop();
     this.setState({
       textIndex: 0,
@@ -344,7 +349,7 @@ class Home extends React.Component<
   private speedWithPunctuation(): number {
     if (/[\.\;\!\?]/.test(this.state.textArray[this.state.textIndex])) {
       return this.state.speed * 1.5;
-    } else if (/[,\:\-\u2012-\u2015]/.test(this.state.textArray[this.state.textIndex])) {
+    } else if (/(,|:|-|[\u2012-\u2015]|\"\S)/.test(this.state.textArray[this.state.textIndex])) {
       return this.state.speed * 1.2;
     } else {
       return this.state.speed;
