@@ -350,7 +350,7 @@ class Home extends React.Component<
     if (/[\.\;\!\?]/.test(this.state.textArray[this.state.textIndex])) {
       return this.state.speed * 1.5;
     } else if (/(,|:|-|[\u2012-\u2015]|\"\S)/.test(this.state.textArray[this.state.textIndex])) {
-      return this.state.speed * 1.2;
+      return this.state.speed * 1.3;
     } else {
       return this.state.speed;
     }
